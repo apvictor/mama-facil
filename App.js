@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Styles } from './global';
 import { StatusBar } from 'expo-status-bar';
 import * as Notifications from "expo-notifications";
 import { FlatList, Image, TouchableOpacity } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { appController } from './App-controller';
 
 export default function App() {
   Notifications.setNotificationHandler({
@@ -14,93 +14,18 @@ export default function App() {
     }),
   });
 
-  const [hour, setHour] = useState(4);
-  const [feedings, setFeedings] = useState([]);
+  const {
+    hour,
+    feedings,
+    loadFeedings,
+    addNotification,
+    cancelNotification,
+    toggleStatus
+  } = appController()
 
-  // Função para salvar os agendamentos no AsyncStorage
-  const saveFeedings = async (feedings) => {
-    try {
-      await AsyncStorage.setItem('feedings', JSON.stringify(feedings));
-    } catch (error) {
-      console.error("Erro ao salvar os agendamentos:", error);
-    }
-  };
-
-  // Função para carregar os agendamentos do AsyncStorage ao iniciar o app
-  const loadFeedings = async () => {
-    try {
-      const savedFeedings = await AsyncStorage.getItem('feedings');
-      if (savedFeedings) {
-        const parsedFeedings = JSON.parse(savedFeedings).map((feeding) => ({
-          ...feeding,
-          time: new Date(feeding.time), // Converter string para Date
-        }));
-        // Ordenar os agendamentos do mais recente para o mais antigo
-        parsedFeedings.sort((a, b) => b.time - a.time);
-        setFeedings(parsedFeedings);
-      }
-    } catch (error) {
-      console.error("Erro ao carregar os agendamentos:", error);
-    }
-  };
-
-  // Carregar os agendamentos assim que o app iniciar
   useEffect(() => {
-    loadFeedings();
-  }, []);
-
-  // Função para adicionar um novo agendamento e salvar no AsyncStorage
-  async function addNotification() {
-    const id = await Notifications.scheduleNotificationAsync({
-      content: {
-        title: "Hora de mamar 🍼",
-        body: `Não esqueça de concluir, se passou ${hour} horas.`,
-      },
-      trigger: { seconds: hour * 3600 },
-    });
-
-    const newFeeding = {
-      id,
-      hour,
-      status: false,
-      time: new Date(new Date().getTime() + hour * 3600 * 1000),
-    };
-
-    const updatedFeedings = [...feedings, newFeeding];
-    // Ordenar os agendamentos do mais recente para o mais antigo
-    updatedFeedings.sort((a, b) => b.time - a.time);
-    setFeedings(updatedFeedings);
-    saveFeedings(updatedFeedings); // Salvar os agendamentos
-  }
-
-  // Função para cancelar uma notificação e atualizar o AsyncStorage
-  async function cancelNotification(id) {
-    await Notifications.cancelScheduledNotificationAsync(id);
-    const updatedFeedings = feedings.filter((feeding) => feeding.id !== id);
-    // Ordenar os agendamentos do mais recente para o mais antigo
-    updatedFeedings.sort((a, b) => b.time - a.time);
-    setFeedings(updatedFeedings);
-    saveFeedings(updatedFeedings); // Atualizar o armazenamento
-  }
-
-
-  const toggleStatus = async (id) => {
-    const updatedFeedings = feedings.map((feeding) => {
-      if (feeding.id === id) {
-        return { ...feeding, status: !feeding.status };
-      }
-      return feeding;
-    });
-
-    // Ordenar os agendamentos do mais recente para o mais antigo
-    updatedFeedings.sort((a, b) => b.time - a.time);
-    setFeedings(updatedFeedings);
-    saveFeedings(updatedFeedings); // Salvar as alterações no AsyncStorage
-  };
-
-  console.log(feedings);
-
-
+    loadFeedings()
+  }, [])
 
   return (
     <Styles.Container>
