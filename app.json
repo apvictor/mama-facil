@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "mama-facil",
+    "name": "Mamá Fácil",
     "slug": "mama-facil",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -16,12 +16,18 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.apvictor.mamafacil"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "87402ce0-1613-4958-8798-760f0d0ada67"
+      }
     }
   }
 }
